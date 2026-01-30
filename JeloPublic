@@ -1,7 +1,12 @@
 local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
-
+local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
+local muscleEvent = Player:WaitForChild("muscleEvent")
+local display = Player.DisplayName
 
 local function preventAFK()
     VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
@@ -16,7 +21,7 @@ Player.Idled:Connect(preventAFK)
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GeloXOshiru/Jelo.image.png/refs/heads/main/Jelo.image.png", true))()
 
-local window = library:AddWindow("PrimeJelo | Public Script | Welcome "..display, {
+local window = library:AddWindow("PrimeJelo | Public Script| Welcome-", {
     main_color = Color3.fromRGB(0, 0, 255),
     min_size = Vector2.new(650, 870),
     can_resize = true,
@@ -4502,5 +4507,3 @@ local Credits = window:AddTab("Credits")
 
 Credits:AddLabel("Public Version")
 Credits:AddLabel("Script Made by Jelo")
-Credits:AddButton("Copy Fb Link", function()
-    setclipboard("https://www.facebook.com/share/1CGNjrn2pX/")
