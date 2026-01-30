@@ -21,8 +21,8 @@ Player.Idled:Connect(preventAFK)
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GeloXOshiru/Jelo.image.png/refs/heads/main/Jelo.image.png", true))()
 
-local window = library:AddWindow("PrimeJelo | Public Script| Welcome-", {
-    main_color = Color3.fromRGB(0, 0, 255),
+local window = library:AddWindow("PrimeJelo | Public Script| Welcome-"..display, {
+    main_color = Color3.fromRGB(0, 0, 0),
     min_size = Vector2.new(650, 870),
     can_resize = true,
 })
@@ -881,6 +881,124 @@ autoEquipToolsFolder:AddSwitch("Fast Tools", function(Value)
     end
 end)
 
+local modeDropdown = miscTab:AddDropdown("Select Tool", function(selection)
+    SelectedMode = selection
+end)
+
+modeDropdown:Add("Weight")
+modeDropdown:Add("Pushups")
+modeDropdown:Add("Situps")
+modeDropdown:Add("Handstands")
+modeDropdown:Add("Fast Punch")
+modeDropdown:Add("Stomp")
+modeDropdown:Add("Ground Slam")
+
+modeDropdown:Add("Weight + Punch")
+modeDropdown:Add("Pushups + Punch")
+modeDropdown:Add("Situps + Punch")
+
+local function equipToolFast(player, toolName, repName, repValue)
+    local tool = player.Backpack:FindFirstChild(toolName) or player.Character:FindFirstChild(toolName)
+    if tool and player.Character and player.Character:FindFirstChild("Humanoid") then
+        tool.Parent = player.Character
+        if repName and tool:FindFirstChild(repName) then
+            tool[repName].Value = repValue
+        end
+    end
+end
+
+local function fastPunch(player)
+    local punch = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
+    if punch then
+        punch.Parent = player.Character
+        if punch:FindFirstChild("attackTime") then punch.attackTime.Value = 0 end
+        player.muscleEvent:FireServer("punch", "rightHand")
+        player.muscleEvent:FireServer("punch", "leftHand")
+        local punchTool = player.Character and player.Character:FindFirstChild("Punch")
+        if punchTool then punchTool:Activate() end
+    end
+end
+
+miscTab:AddSwitch("Start", function(enabled)
+    AutoFarm = enabled
+    local player = game:GetService("Players").LocalPlayer
+
+    local function unequipAll()
+        local toolsToUnequip = {}
+        if string.find(SelectedMode, "Weight") or string.find(SelectedMode, "Pushups") or string.find(SelectedMode, "Situps") or string.find(SelectedMode, "Handstands") then
+            table.insert(toolsToUnequip, SelectedMode)
+        end
+        if SelectedMode == "Fast Punch" or SelectedMode == "Stomp" or SelectedMode == "Ground Slam" then
+            table.insert(toolsToUnequip, SelectedMode == "Fast Punch" and "Punch" or SelectedMode)
+        end
+        if string.find(SelectedMode, "Combo:") then
+            table.insert(toolsToUnequip, "Punch")
+            if string.find(SelectedMode, "Weight") then table.insert(toolsToUnequip, "Weight") end
+            if string.find(SelectedMode, "Pushups") then table.insert(toolsToUnequip, "Pushups") end
+            if string.find(SelectedMode, "Situps") then table.insert(toolsToUnequip, "Situps") end
+        end
+        
+        local char = player.Character
+        for _, toolName in ipairs(toolsToUnequip) do
+            local eq = char:FindFirstChild(toolName)
+            if eq then eq.Parent = player.Backpack end
+        end
+    end
+
+    if enabled then
+        task.spawn(function()
+            while AutoFarm do
+                
+                if SelectedMode == "Weight" or SelectedMode == "Pushups" or SelectedMode == "Situps" or SelectedMode == "Handstands" then
+                    equipToolFast(player, SelectedMode, "repTime", 0)
+                    player.muscleEvent:FireServer("rep")
+
+                elseif SelectedMode == "Fast Punch" then
+                    fastPunch(player)
+
+                elseif SelectedMode == "Stomp" then
+                    equipToolFast(player, "Stomp", "attackTime", 0)
+                    player.muscleEvent:FireServer("stomp")
+                    if player.Character:FindFirstChild("Stomp") then player.Character.Stomp:Activate() end
+                    if tick() % 6 < 0.1 then
+                        local virtualUser = game:GetService("VirtualUser")
+                        virtualUser:CaptureController()
+                        virtualUser:ClickButton1(Vector2.new(500, 500))
+                    end
+
+                elseif SelectedMode == "Ground Slam" then
+                    equipToolFast(player, "Ground Slam", "attackTime", 0)
+                    player.muscleEvent:FireServer("slam")
+                    if player.Character:FindFirstChild("Ground Slam") then player.Character["Ground Slam"]:Activate() end
+                    if tick() % 6 < 0.1 then
+                        local virtualUser = game:GetService("VirtualUser")
+                        virtualUser:CaptureController()
+                        virtualUser:ClickButton1(Vector2.new(500, 500))
+                    end
+                
+                elseif SelectedMode == "Weight + Punch" then
+                    equipToolFast(player, "Weight", "repTime", 0)
+                    player.muscleEvent:FireServer("rep")
+                    fastPunch(player)
+
+                elseif SelectedMode == "Pushups + Punch" then
+                    equipToolFast(player, "Pushups", "repTime", 0)
+                    player.muscleEvent:FireServer("rep")
+                    fastPunch(player)
+                    
+                elseif SelectedMode == "Situps + Punch" then
+                    equipToolFast(player, "Situps", "repTime", 0)
+                    player.muscleEvent:FireServer("rep")
+                    fastPunch(player)
+                end
+                
+                task.wait()
+            end
+        end)
+    else
+        unequipAll()
+    end
+end)
 
 local estadisticas = window:AddTab("Stats")
 
